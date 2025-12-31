@@ -42,59 +42,21 @@ export function useWebSocket(
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectCountRef = useRef(0);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const isConnectingRef = useRef(false);
 
-  const getWebSocketUrl = useCallback(() => {
+  // コールバックをrefで保持して依存配列の問題を回避
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const getWebSocketUrl = useCallback((sid: string) => {
     const baseUrl = import.meta.env.VITE_WS_URL || window.location.origin.replace('http', 'ws');
-    return `${baseUrl}/api/mna/sessions/${sessionId}/ws`;
-  }, [sessionId]);
-
-  const connect = useCallback(() => {
-    if (!sessionId) return;
-    if (wsRef.current?.readyState === WebSocket.OPEN) return;
-
-    setStatus('connecting');
-
-    const ws = new WebSocket(getWebSocketUrl());
-
-    ws.onopen = () => {
-      setStatus('connected');
-      reconnectCountRef.current = 0;
-      onOpen?.();
-    };
-
-    ws.onclose = () => {
-      setStatus('disconnected');
-      onClose?.();
-
-      // 自動再接続
-      if (reconnectCountRef.current < reconnectAttempts) {
-        reconnectCountRef.current += 1;
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connect();
-        }, reconnectInterval);
-      }
-    };
-
-    ws.onerror = (event) => {
-      setStatus('error');
-      onError?.(event);
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data) as WSServerMessage;
-        onMessage?.(message);
-      } catch (error) {
-        console.error('Failed to parse WebSocket message:', error);
-      }
-    };
-
-    wsRef.current = ws;
-  }, [sessionId, getWebSocketUrl, onMessage, onOpen, onClose, onError, reconnectAttempts, reconnectInterval]);
+    return `${baseUrl}/api/mna/sessions/${sid}/ws`;
+  }, []);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = undefined;
     }
 
     if (wsRef.current) {
@@ -102,8 +64,67 @@ export function useWebSocket(
       wsRef.current = null;
     }
 
+    isConnectingRef.current = false;
     setStatus('disconnected');
   }, []);
+
+  const connect = useCallback(() => {
+    if (!sessionId) return;
+    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+    if (isConnectingRef.current) return;
+
+    isConnectingRef.current = true;
+    setStatus('connecting');
+
+    const ws = new WebSocket(getWebSocketUrl(sessionId));
+
+    ws.onopen = () => {
+      isConnectingRef.current = false;
+      setStatus('connected');
+      reconnectCountRef.current = 0;
+      optionsRef.current.onOpen?.();
+    };
+
+    ws.onclose = (event) => {
+      isConnectingRef.current = false;
+      wsRef.current = null;
+      setStatus('disconnected');
+      optionsRef.current.onClose?.();
+
+      // セッションが見つからない場合（4004）は再接続しない
+      if (event.code === 4004) {
+        console.warn('Session not found, not reconnecting');
+        return;
+      }
+
+      // 自動再接続
+      if (reconnectCountRef.current < reconnectAttempts) {
+        reconnectCountRef.current += 1;
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (sessionId) {
+            connect();
+          }
+        }, reconnectInterval);
+      }
+    };
+
+    ws.onerror = (event) => {
+      isConnectingRef.current = false;
+      setStatus('error');
+      optionsRef.current.onError?.(event);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data) as WSServerMessage;
+        optionsRef.current.onMessage?.(message);
+      } catch (error) {
+        console.error('Failed to parse WebSocket message:', error);
+      }
+    };
+
+    wsRef.current = ws;
+  }, [sessionId, getWebSocketUrl, reconnectAttempts, reconnectInterval]);
 
   const send = useCallback((message: WSClientMessage) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -116,13 +137,14 @@ export function useWebSocket(
   // セッションIDが変わったら再接続
   useEffect(() => {
     if (sessionId) {
+      reconnectCountRef.current = 0;
       connect();
     }
 
     return () => {
       disconnect();
     };
-  }, [sessionId, connect, disconnect]);
+  }, [sessionId]); // connect/disconnectを依存配列から除外
 
   return {
     status,
