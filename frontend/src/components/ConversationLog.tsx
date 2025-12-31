@@ -8,12 +8,14 @@ interface ConversationLogProps {
   utterances: Utterance[];
   onPin?: (id: string, note?: string) => void;
   isRecording?: boolean;
+  interimTranscript?: string;
 }
 
 export function ConversationLog({
   utterances,
   onPin,
   isRecording = false,
+  interimTranscript = '',
 }: ConversationLogProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -37,19 +39,32 @@ export function ConversationLog({
 
       {/* ログエリア */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {utterances.length === 0 ? (
+        {utterances.length === 0 && !interimTranscript ? (
           <div className="text-center text-gray-400 py-8">
             <p>会話ログがありません</p>
             <p className="text-sm mt-1">録音を開始すると、会話が表示されます</p>
           </div>
         ) : (
-          utterances.map((utterance) => (
-            <UtteranceItem
-              key={utterance.id}
-              utterance={utterance}
-              onPin={onPin}
-            />
-          ))
+          <>
+            {utterances.map((utterance) => (
+              <UtteranceItem
+                key={utterance.id}
+                utterance={utterance}
+                onPin={onPin}
+              />
+            ))}
+            {/* 中間トランスクリプト（確定前のテキスト） */}
+            {interimTranscript && (
+              <div className="flex justify-end">
+                <div className="max-w-[80%] rounded-lg px-4 py-2 bg-primary-400 text-white opacity-70">
+                  <div className="text-xs mb-1 text-primary-200">
+                    認識中...
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{interimTranscript}</p>
+                </div>
+              </div>
+            )}
+          </>
         )}
         <div ref={bottomRef} />
       </div>

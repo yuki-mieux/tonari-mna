@@ -9,8 +9,9 @@ import { SuggestionPanel } from '../components/SuggestionPanel';
 import { ProgressBar } from '../components/ProgressBar';
 import { Button } from '../components/ui/Button';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { useAudioCapture } from '../hooks/useAudioCapture';
 import { useSessionStore } from '../stores/sessionStore';
-import { sessionApi } from '../lib/api';
+import { sessionApi, configApi } from '../lib/api';
 import type { ExtractionProgress, MissingField } from '../types/api';
 import type { WSServerMessage } from '../types/websocket';
 
@@ -24,13 +25,13 @@ export function Session() {
   const [progress, setProgress] = useState<ExtractionProgress | null>(null);
   const [missingFields, setMissingFields] = useState<MissingField[]>([]);
   const [isEnding, setIsEnding] = useState(false);
+  const [deepgramApiKey, setDeepgramApiKey] = useState<string | null>(null);
+  const [interimTranscript, setInterimTranscript] = useState<string>('');
 
   // セッション状態
   const {
     startSession,
     endSession,
-    isRecording,
-    setRecording,
     utterances,
     extractions,
     suggestions,
@@ -89,6 +90,41 @@ export function Session() {
     },
   });
 
+  // 音声キャプチャのトランスクリプトハンドラ
+  const handleTranscript = useCallback(
+    (text: string, isFinal: boolean, speaker?: string) => {
+      if (isFinal) {
+        // 確定したトランスクリプトをWebSocketに送信
+        send({
+          type: 'transcript',
+          text,
+          speaker: (speaker === 'speaker_0' ? 'user' : 'customer') as 'user' | 'customer',
+          is_final: true,
+        });
+        setInterimTranscript('');
+      } else {
+        // 中間結果を表示
+        setInterimTranscript(text);
+      }
+    },
+    [send]
+  );
+
+  // 音声キャプチャフック
+  const {
+    isRecording,
+    isConnecting: isAudioConnecting,
+    error: audioError,
+    startRecording,
+    stopRecording,
+  } = useAudioCapture(deepgramApiKey || '', {
+    onTranscript: handleTranscript,
+    onError: (error) => {
+      console.error('Audio capture error:', error);
+    },
+    language: 'ja',
+  });
+
   // 抽出情報を取得
   const fetchExtractions = useCallback(async () => {
     if (!sessionId) return;
@@ -110,13 +146,27 @@ export function Session() {
     if (sessionId) {
       startSession(sessionId, ''); // TODO: projectIdを取得
       fetchExtractions();
+
+      // Deepgram APIキーを取得
+      configApi.get().then((config) => {
+        setDeepgramApiKey(config.deepgram_api_key);
+      }).catch((error) => {
+        console.error('Failed to get config:', error);
+      });
     }
   }, [sessionId, startSession, fetchExtractions]);
 
   // 録音開始/停止
-  const toggleRecording = () => {
-    setRecording(!isRecording);
-    // TODO: 実際の音声キャプチャ実装
+  const toggleRecording = async () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      if (!deepgramApiKey) {
+        console.error('Deepgram API key not available');
+        return;
+      }
+      await startRecording();
+    }
   };
 
   // 発話をピン留め
@@ -175,6 +225,7 @@ export function Session() {
             utterances={utterances}
             onPin={handlePinUtterance}
             isRecording={isRecording}
+            interimTranscript={interimTranscript}
           />
         </div>
 
@@ -257,10 +308,14 @@ export function Session() {
             <Button
               variant={isRecording ? 'danger' : 'success'}
               onClick={toggleRecording}
+              disabled={isAudioConnecting}
               className="min-w-[120px]"
             >
-              {isRecording ? '録音停止' : '録音開始'}
+              {isAudioConnecting ? '接続中...' : isRecording ? '録音停止' : '録音開始'}
             </Button>
+            {audioError && (
+              <span className="text-sm text-red-500">{audioError}</span>
+            )}
             <Button
               variant="secondary"
               onClick={handleEndSession}

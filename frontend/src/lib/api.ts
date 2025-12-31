@@ -117,6 +117,27 @@ export const projectApi = {
 // セッションAPI
 // ========================
 
+// ========================
+// 設定API
+// ========================
+
+interface AppConfig {
+  deepgram_api_key: string;
+}
+
+export const configApi = {
+  /**
+   * アプリ設定を取得
+   */
+  get: () => {
+    return request<AppConfig>('/api/config');
+  },
+};
+
+// ========================
+// セッションAPI
+// ========================
+
 export const sessionApi = {
   /**
    * セッションを作成
