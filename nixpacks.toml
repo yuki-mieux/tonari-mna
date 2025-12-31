@@ -1,0 +1,13 @@
+# Nixpacks configuration for Railway deployment
+# Use Python provider for proper pip handling
+
+providers = ["python"]
+
+[variables]
+NIXPACKS_PYTHON_VERSION = "3.11"
+
+[phases.setup]
+# No extra packages needed - pure Python dependencies via pip
+
+[start]
+cmd = "cd backend && gunicorn app.main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120 -k uvicorn.workers.UvicornWorker"

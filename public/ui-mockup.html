@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tonari UI Mockup v4 - MVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Clean White Theme */
+      --bg-base: #ffffff;
+      --bg-subtle: #fafafa;
+      --bg-muted: #f5f5f5;
+      --border: #e5e5e5;
+      --border-strong: #d4d4d4;
+
+      --text-primary: #171717;
+      --text-secondary: #525252;
+      --text-muted: #a3a3a3;
+
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-subtle: #eff6ff;
+
+      --success: #16a34a;
+      --success-subtle: #f0fdf4;
+      --error: #dc2626;
+      --error-subtle: #fef2f2;
+
+      /* AI Message Category Colors */
+      --ai-notice: #525252;        /* 気づき: グレー/ニュートラル */
+      --ai-notice-subtle: #fafafa;
+      --ai-action: #2563eb;        /* 確認推奨: ブルー */
+      --ai-action-subtle: #eff6ff;
+      --ai-suggest: #7c3aed;       /* 深掘り案: パープル */
+      --ai-suggest-subtle: #f5f3ff;
+      --ai-warning: #d97706;       /* 注意サイン: アンバー */
+      --ai-warning-subtle: #fffbeb;
+      --ai-positive: #16a34a;      /* 良い兆候: グリーン */
+      --ai-positive-subtle: #f0fdf4;
+
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans JP', -apple-system, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ========== HEADER ========== */
+    .header {
+      background: var(--bg-base);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* ========== PLAY/STOP BUTTON (Streaming Style) ========== */
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      background: var(--text-primary);
+      color: white;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    .play-btn.recording {
+      background: var(--error);
+    }
+
+    .play-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .status-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .status-text.recording {
+      color: var(--error);
+    }
+
+    .btn-ghost {
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text-primary);
+      background: var(--bg-muted);
+    }
+
+    /* ========== MAIN CONTENT ========== */
+    .panel {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: var(--bg-base);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+
+    /* ========== LIVE VIEW (2 COLUMNS) ========== */
+    .live-view {
+      flex: 1;
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: var(--bg-subtle);
+    }
+
+    .transcript-panel {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .ai-panel {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    /* AI Messages - Base */
+    .ai-message {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      border-left: 3px solid var(--ai-notice);
+      background: var(--ai-notice-subtle);
+    }
+
+    .ai-message-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ai-notice);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .ai-message-content {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* AI Message - 気づき (Notice): グレー */
+    .ai-message.notice {
+      border-left-color: var(--ai-notice);
+      background: var(--ai-notice-subtle);
+    }
+    .ai-message.notice .ai-message-label {
+      color: var(--ai-notice);
+    }
+
+    /* AI Message - 確認推奨 (Action): ブルー */
+    .ai-message.action {
+      border-left-color: var(--ai-action);
+      background: var(--ai-action-subtle);
+    }
+    .ai-message.action .ai-message-label {
+      color: var(--ai-action);
+    }
+
+    /* AI Message - 深掘り案 (Suggest): パープル */
+    .ai-message.suggest {
+      border-left-color: var(--ai-suggest);
+      background: var(--ai-suggest-subtle);
+    }
+    .ai-message.suggest .ai-message-label {
+      color: var(--ai-suggest);
+    }
+
+    /* AI Message - 注意サイン (Warning): アンバー */
+    .ai-message.warning {
+      border-left-color: var(--ai-warning);
+      background: var(--ai-warning-subtle);
+    }
+    .ai-message.warning .ai-message-label {
+      color: var(--ai-warning);
+    }
+
+    /* AI Message - 良い兆候 (Positive): グリーン */
+    .ai-message.positive {
+      border-left-color: var(--ai-positive);
+      background: var(--ai-positive-subtle);
+    }
+    .ai-message.positive .ai-message-label {
+      color: var(--ai-positive);
+    }
+
+    /* Chat Input */
+    .chat-input-area {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .chat-input:focus {
+      border-color: var(--accent);
+    }
+
+    .chat-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-muted);
+    }
+
+    /* Transcript */
+    .transcript-item {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .transcript-item:last-child {
+      border-bottom: none;
+    }
+
+    .transcript-speaker {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .transcript-speaker.self {
+      color: var(--success);
+    }
+
+    .transcript-speaker.other {
+      color: var(--accent);
+    }
+
+    .transcript-text {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .transcript-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+    }
+
+    .empty-state-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 16px;
+      background: var(--bg-muted);
+      border-radius: var(--radius-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .empty-state-icon svg {
+      width: 28px;
+      height: 28px;
+      color: var(--text-muted);
+    }
+
+    .empty-state-text {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ========== AUTH SCREEN ========== */
+    .auth-card {
+      background: var(--bg-base);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .auth-logo {
+      font-size: 28px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .auth-tagline {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .auth-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--text-primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .auth-btn:hover {
+      background: #262626;
+    }
+
+    /* ========== DEMO SECTIONS ========== */
+    .demo-section {
+      margin-bottom: 48px;
+      padding: 32px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .demo-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+    }
+
+    .demo-container {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .demo-note {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--bg-subtle);
+      border-radius: var(--radius-sm);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== DEMO: AUTH SCREEN ==================== -->
+  <div class="demo-section">
+    <h2 class="demo-title">1. ログイン画面</h2>
+    <div class="demo-container" style="background: var(--bg-base);">
+      <div style="padding: 48px; display: flex; justify-content: center;">
+        <div class="auth-card">
+          <div class="auth-logo">Tonari</div>
+          <p class="auth-tagline">面接をもっとスマートに</p>
+
+          <div class="form-group">
+            <label class="form-label">メールアドレス</label>
+            <input type="email" class="form-input" placeholder="you@example.com">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">パスワード</label>
+            <input type="password" class="form-input" placeholder="••••••••">
+          </div>
+
+          <button class="auth-btn">ログイン</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DEMO: MAIN HEADER (Standby) ==================== -->
+  <div class="demo-section">
+    <h2 class="demo-title">2. ヘッダー（待機中）</h2>
+    <div class="demo-container">
+      <div class="header">
+        <div class="header-left">
+          <span class="brand">Tonari</span>
+        </div>
+        <div class="header-right">
+          <span class="status-text">待機中</span>
+          <button class="play-btn" title="録音を開始">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          <button class="btn-ghost">設定</button>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">シンプルなヘッダー。再生ボタン（▶）で録音開始。</p>
+  </div>
+
+  <!-- ==================== DEMO: MAIN HEADER (Recording) ==================== -->
+  <div class="demo-section">
+    <h2 class="demo-title">3. ヘッダー（録音中）</h2>
+    <div class="demo-container">
+      <div class="header">
+        <div class="header-left">
+          <span class="brand">Tonari</span>
+        </div>
+        <div class="header-right">
+          <span class="status-text recording">録音中</span>
+          <button class="play-btn recording" title="録音を停止">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="1"/>
+            </svg>
+          </button>
+          <button class="btn-ghost">設定</button>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">録音中は赤いボタン + 停止アイコン（■）に変化。アニメーションなしのクリーンなUI。</p>
+  </div>
+
+  <!-- ==================== DEMO: LIVE VIEW (Recording) ==================== -->
+  <div class="demo-section">
+    <h2 class="demo-title">4. メイン画面（録音中）</h2>
+    <div class="demo-container">
+      <div class="header">
+        <div class="header-left">
+          <span class="brand">Tonari</span>
+        </div>
+        <div class="header-right">
+          <span class="status-text recording">録音中</span>
+          <button class="play-btn recording" title="録音を停止">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="6" width="12" height="12" rx="1"/>
+            </svg>
+          </button>
+          <button class="btn-ghost">設定</button>
+        </div>
+      </div>
+
+      <div class="live-view">
+        <!-- Transcript Panel (LEFT) -->
+        <div class="panel transcript-panel">
+          <div class="panel-header">
+            <span>文字起こし</span>
+          </div>
+          <div class="panel-content">
+            <div class="transcript-item">
+              <div class="transcript-speaker self">自分</div>
+              <div class="transcript-text">前職ではどのような業務を担当されていましたか？</div>
+              <div class="transcript-time">14:32:15</div>
+            </div>
+            <div class="transcript-item">
+              <div class="transcript-speaker other">相手</div>
+              <div class="transcript-text">はい、営業チームのリーダーとして、新規顧客開拓を担当していました。チームで年間売上120%達成しました。</div>
+              <div class="transcript-time">14:32:28</div>
+            </div>
+            <div class="transcript-item">
+              <div class="transcript-speaker self">自分</div>
+              <div class="transcript-text">素晴らしいですね。具体的にどのような施策を行いましたか？</div>
+              <div class="transcript-time">14:32:45</div>
+            </div>
+            <div class="transcript-item">
+              <div class="transcript-speaker other">相手</div>
+              <div class="transcript-text">主にテレアポとメールでのアプローチを組み合わせて、リードを獲得していきました。</div>
+              <div class="transcript-time">14:33:02</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Panel (RIGHT) -->
+        <div class="panel ai-panel">
+          <div class="panel-header">
+            <span>サポートAI</span>
+          </div>
+          <div class="panel-content">
+            <div class="ai-message notice">
+              <div class="ai-message-label">気づき</div>
+              <div class="ai-message-content">
+                候補者は「チームで達成」と言っていますが、本人の具体的な役割がまだ不明確です。
+              </div>
+            </div>
+            <div class="ai-message action">
+              <div class="ai-message-label">確認推奨</div>
+              <div class="ai-message-content">
+                希望年収についてまだ確認されていません。
+              </div>
+            </div>
+            <div class="ai-message suggest">
+              <div class="ai-message-label">深掘り案</div>
+              <div class="ai-message-content">
+                「その成果において、〇〇さん個人はどのような役割を担われましたか？」
+              </div>
+            </div>
+            <div class="ai-message warning">
+              <div class="ai-message-label">注意サイン</div>
+              <div class="ai-message-content">
+                「チームで」という表現が多く、個人の貢献が曖昧な可能性があります。
+              </div>
+            </div>
+            <div class="ai-message positive">
+              <div class="ai-message-label">良い兆候</div>
+              <div class="ai-message-content">
+                具体的な数字（売上120%）を挙げて実績を語れています。
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" class="chat-input" placeholder="質問があれば入力...">
+            <button class="btn btn-primary">送信</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="demo-note">左: 文字起こし / 右: サポートAI（5色のカテゴリ表示）<br>
+      <span style="color: var(--ai-notice);">● 気づき（グレー）</span>
+      <span style="color: var(--ai-action);">● 確認推奨（ブルー）</span>
+      <span style="color: var(--ai-suggest);">● 深掘り案（パープル）</span>
+      <span style="color: var(--ai-warning);">● 注意サイン（アンバー）</span>
+      <span style="color: var(--ai-positive);">● 良い兆候（グリーン）</span>
+    </p>
+  </div>
+
+  <!-- ==================== DEMO: EMPTY STATE ==================== -->
+  <div class="demo-section" style="border-bottom: none;">
+    <h2 class="demo-title">5. 空の状態（面接開始前）</h2>
+    <div class="demo-container">
+      <div class="header">
+        <div class="header-left">
+          <span class="brand">Tonari</span>
+        </div>
+        <div class="header-right">
+          <span class="status-text">待機中</span>
+          <button class="play-btn" title="録音を開始">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+          <button class="btn-ghost">設定</button>
+        </div>
+      </div>
+
+      <div class="live-view">
+        <!-- Transcript Panel (LEFT) -->
+        <div class="panel transcript-panel">
+          <div class="panel-header">
+            <span>文字起こし</span>
+          </div>
+          <div class="panel-content">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                </svg>
+              </div>
+              <div class="empty-state-text">
+                再生ボタンをクリックして<br>面接を開始してください
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Panel (RIGHT) -->
+        <div class="panel ai-panel">
+          <div class="panel-header">
+            <span>サポートAI</span>
+          </div>
+          <div class="panel-content">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+              </div>
+              <div class="empty-state-text">
+                面接が始まると<br>ここにアドバイスが表示されます
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input type="text" class="chat-input" placeholder="質問があれば入力...">
+            <button class="btn btn-primary">送信</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖人君子AI - ワイヤーフレーム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --wire-bg: #FAFAFA;
+            --wire-border: #E0E0E0;
+            --wire-text: #424242;
+            --wire-light-text: #9E9E9E;
+            --wire-accent: #2196F3;
+            --wire-warning: #FF9800;
+            --wire-danger: #F44336;
+            --wire-success: #4CAF50;
+            --speaker-self: #E3F2FD;
+            --speaker-other: #E8F5E9;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: var(--wire-bg);
+            color: var(--wire-text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wireframe-label {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 8px 16px;
+            font-size: 12px;
+            border-radius: 4px;
+            z-index: 1000;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            height: calc(100vh - 40px);
+        }
+
+        /* Left Panel - Transcript */
+        .left-panel {
+            background: white;
+            border: 2px solid var(--wire-border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--wire-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            font-weight: 700;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--wire-success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--wire-success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .transcript-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .transcript-item {
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .transcript-item.self {
+            background: var(--speaker-self);
+            border-left: 4px solid var(--wire-accent);
+        }
+
+        .transcript-item.other {
+            background: var(--speaker-other);
+            border-left: 4px solid var(--wire-success);
+        }
+
+        .transcript-item.risk-high {
+            background: #FFEBEE;
+            border-left: 4px solid var(--wire-danger);
+        }
+
+        .transcript-item.risk-medium {
+            background: #FFF3E0;
+            border-left: 4px solid var(--wire-warning);
+        }
+
+        .speaker-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--wire-light-text);
+            margin-bottom: 4px;
+        }
+
+        .transcript-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .risk-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .risk-indicator.high {
+            background: var(--wire-danger);
+            color: white;
+        }
+
+        .risk-indicator.medium {
+            background: var(--wire-warning);
+            color: white;
+        }
+
+        .recording-controls {
+            padding: 16px;
+            border-top: 2px solid var(--wire-border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--wire-border);
+            border-radius: 8px;
+            background: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--wire-bg);
+        }
+
+        .btn.primary {
+            background: var(--wire-accent);
+            border-color: var(--wire-accent);
+            color: white;
+        }
+
+        .btn.danger {
+            background: var(--wire-danger);
+            border-color: var(--wire-danger);
+            color: white;
+        }
+
+        /* Right Panel - Tabs */
+        .right-panel {
+            background: white;
+            border: 2px solid var(--wire-border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--wire-border);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: var(--wire-bg);
+        }
+
+        .tab.active {
+            border-bottom-color: var(--wire-accent);
+            color: var(--wire-accent);
+        }
+
+        .tab-badge {
+            background: var(--wire-danger);
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .tab-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tab 1: Real-time Analysis */
+        .analysis-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--wire-light-text);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .risk-card {
+            background: #FFEBEE;
+            border: 2px solid var(--wire-danger);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .risk-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .risk-level {
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: var(--wire-danger);
+            color: white;
+        }
+
+        .risk-time {
+            font-size: 12px;
+            color: var(--wire-light-text);
+        }
+
+        .risk-quote {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            border-left: 3px solid var(--wire-danger);
+        }
+
+        .risk-analysis {
+            font-size: 13px;
+            color: var(--wire-text);
+            line-height: 1.6;
+        }
+
+        .risk-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .indicator-tag {
+            font-size: 11px;
+            padding: 4px 10px;
+            background: white;
+            border: 1px solid var(--wire-danger);
+            border-radius: 16px;
+            color: var(--wire-danger);
+        }
+
+        .quick-action {
+            margin-top: 16px;
+            padding: 12px;
+            background: white;
+            border: 2px dashed var(--wire-accent);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--wire-accent);
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .quick-action:hover {
+            background: #E3F2FD;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: var(--wire-bg);
+            border: 2px solid var(--wire-border);
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--wire-text);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--wire-light-text);
+            margin-top: 4px;
+        }
+
+        /* Tab 2: Rephrase Suggestions */
+        .selected-text {
+            background: #FFF3E0;
+            border: 2px solid var(--wire-warning);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .selected-label {
+            font-size: 12px;
+            color: var(--wire-warning);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .selected-content {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .rephrase-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .rephrase-card {
+            border: 2px solid var(--wire-border);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .rephrase-card:hover {
+            border-color: var(--wire-accent);
+            background: #E3F2FD;
+        }
+
+        .rephrase-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .rephrase-tone {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: 500;
+        }
+
+        .tone-supportive {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .tone-collaborative {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+
+        .tone-empathetic {
+            background: #F3E5F5;
+            color: #7B1FA2;
+        }
+
+        .rephrase-number {
+            font-size: 12px;
+            color: var(--wire-light-text);
+        }
+
+        .rephrase-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .rephrase-effect {
+            font-size: 13px;
+            color: var(--wire-light-text);
+        }
+
+        .copy-hint {
+            text-align: center;
+            font-size: 12px;
+            color: var(--wire-light-text);
+            margin-top: 16px;
+        }
+
+        /* Tab 3: Reflection */
+        .reflection-section {
+            margin-bottom: 32px;
+        }
+
+        .summary-box {
+            background: var(--wire-bg);
+            border: 2px solid var(--wire-border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .summary-text {
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .feedback-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feedback-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+
+        .feedback-item.positive {
+            background: #E8F5E9;
+        }
+
+        .feedback-item.improvement {
+            background: #FFF3E0;
+        }
+
+        .feedback-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+
+        .feedback-icon.positive {
+            background: var(--wire-success);
+            color: white;
+        }
+
+        .feedback-icon.improvement {
+            background: var(--wire-warning);
+            color: white;
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .action-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: white;
+            border: 2px solid var(--wire-border);
+            border-radius: 8px;
+        }
+
+        .action-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--wire-border);
+            border-radius: 4px;
+        }
+
+        .action-text {
+            font-size: 14px;
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 16px;
+            background: var(--wire-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 24px;
+        }
+
+        /* Annotations */
+        .annotation {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            max-width: 200px;
+            line-height: 1.4;
+            z-index: 100;
+        }
+
+        .annotation::before {
+            content: '';
+            position: absolute;
+            border: 6px solid transparent;
+        }
+
+        .annotation.left::before {
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left-color: #333;
+        }
+
+        .annotation.bottom::before {
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: #333;
+        }
+
+        /* Mobile hint */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .left-panel {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wireframe-label">ワイヤーフレーム v1.0</div>
+
+    <div class="container">
+        <!-- Left Panel: Transcript -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span>📝</span>
+                    文字起こし
+                </div>
+                <div class="status-badge">
+                    <div class="status-dot"></div>
+                    録音中
+                </div>
+            </div>
+
+            <div class="transcript-area">
+                <div class="transcript-item self">
+                    <div class="speaker-label">あなた</div>
+                    <div class="transcript-text">今月の進捗について確認させてください。先週のミーティングで話した件はどうなっていますか？</div>
+                </div>
+
+                <div class="transcript-item other">
+                    <div class="speaker-label">相手</div>
+                    <div class="transcript-text">はい、現在70%ほど完了しています。ただ、一部の仕様確認で遅れが出ていまして...</div>
+                </div>
+
+                <div class="transcript-item self risk-high">
+                    <div class="risk-indicator high">リスク高</div>
+                    <div class="speaker-label">あなた</div>
+                    <div class="transcript-text">なぜこんなに遅れているの？先週も同じこと言ってたよね？</div>
+                </div>
+
+                <div class="transcript-item other">
+                    <div class="speaker-label">相手</div>
+                    <div class="transcript-text">申し訳ありません。クライアントからの返答待ちで...</div>
+                </div>
+
+                <div class="transcript-item self risk-medium">
+                    <div class="risk-indicator medium">リスク中</div>
+                    <div class="speaker-label">あなた</div>
+                    <div class="transcript-text">それは理由にならないでしょう。自分でもっと動かないと。</div>
+                </div>
+            </div>
+
+            <div class="recording-controls">
+                <button class="btn danger">
+                    ⏹️ 録音停止
+                </button>
+                <button class="btn">
+                    セッション終了
+                </button>
+            </div>
+        </div>
+
+        <!-- Right Panel: Tabs -->
+        <div class="right-panel">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab(0)">
+                    ⚡ リアルタイム分析
+                    <span class="tab-badge">2</span>
+                </div>
+                <div class="tab" onclick="switchTab(1)">
+                    💬 言い換え提案
+                </div>
+                <div class="tab" onclick="switchTab(2)">
+                    📊 振り返り
+                </div>
+            </div>
+
+            <!-- Tab 1: Real-time Analysis -->
+            <div class="tab-content active" id="tab-0">
+                <div class="analysis-section">
+                    <div class="section-title">🚨 検知されたリスク発言</div>
+
+                    <div class="risk-card">
+                        <div class="risk-card-header">
+                            <span class="risk-level">高リスク</span>
+                            <span class="risk-time">2分前</span>
+                        </div>
+                        <div class="risk-quote">「なぜこんなに遅れているの？先週も同じこと言ってたよね？」</div>
+                        <div class="risk-analysis">
+                            「なぜ」で始まる詰問は相手を追い詰める可能性があります。また、過去の失敗を繰り返し指摘することで心理的安全性が低下します。
+                        </div>
+                        <div class="risk-indicators">
+                            <span class="indicator-tag">詰問形式</span>
+                            <span class="indicator-tag">過去の繰り返し指摘</span>
+                            <span class="indicator-tag">責任追及</span>
+                        </div>
+                        <div class="quick-action" onclick="switchTab(1)">
+                            💡 言い換え提案を見る →
+                        </div>
+                    </div>
+
+                    <div class="risk-card" style="background: #FFF3E0; border-color: var(--wire-warning);">
+                        <div class="risk-card-header">
+                            <span class="risk-level" style="background: var(--wire-warning);">中リスク</span>
+                            <span class="risk-time">30秒前</span>
+                        </div>
+                        <div class="risk-quote" style="border-color: var(--wire-warning);">「それは理由にならないでしょう。自分でもっと動かないと。」</div>
+                        <div class="risk-analysis">
+                            相手の事情を否定し、一方的に行動を要求する表現です。
+                        </div>
+                        <div class="risk-indicators">
+                            <span class="indicator-tag" style="border-color: var(--wire-warning); color: var(--wire-warning);">事情の否定</span>
+                            <span class="indicator-tag" style="border-color: var(--wire-warning); color: var(--wire-warning);">一方的要求</span>
+                        </div>
+                        <div class="quick-action" onclick="switchTab(1)">
+                            💡 言い換え提案を見る →
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-section">
+                    <div class="section-title">📈 セッション統計</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">5:32</div>
+                            <div class="stat-label">経過時間</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: var(--wire-danger);">2</div>
+                            <div class="stat-label">リスク発言</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: var(--wire-success);">68%</div>
+                            <div class="stat-label">傾聴率</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Rephrase Suggestions -->
+            <div class="tab-content" id="tab-1">
+                <div class="selected-text">
+                    <div class="selected-label">選択された発言</div>
+                    <div class="selected-content">「なぜこんなに遅れているの？先週も同じこと言ってたよね？」</div>
+                </div>
+
+                <div class="section-title">✨ 言い換え候補</div>
+                <div class="rephrase-list">
+                    <div class="rephrase-card">
+                        <div class="rephrase-header">
+                            <span class="rephrase-tone tone-collaborative">協力的</span>
+                            <span class="rephrase-number">提案 1</span>
+                        </div>
+                        <div class="rephrase-text">「具体的にどこで詰まっていますか？一緒に確認しましょう。」</div>
+                        <div class="rephrase-effect">→ 原因の特定を促し、協力姿勢を示す</div>
+                    </div>
+
+                    <div class="rephrase-card">
+                        <div class="rephrase-header">
+                            <span class="rephrase-tone tone-supportive">支援的</span>
+                            <span class="rephrase-number">提案 2</span>
+                        </div>
+                        <div class="rephrase-text">「何か障害になっていることはありますか？サポートできることがあれば教えてください。」</div>
+                        <div class="rephrase-effect">→ 心理的安全性を確保し、本音を引き出す</div>
+                    </div>
+
+                    <div class="rephrase-card">
+                        <div class="rephrase-header">
+                            <span class="rephrase-tone tone-empathetic">寄り添い</span>
+                            <span class="rephrase-number">提案 3</span>
+                        </div>
+                        <div class="rephrase-text">「大変な状況ですね。優先順位を整理して、現実的なスケジュールを立て直しましょうか。」</div>
+                        <div class="rephrase-effect">→ 共感を示しつつ、建設的な解決に導く</div>
+                    </div>
+                </div>
+
+                <div class="copy-hint">💡 カードをクリックして言い換えをコピー</div>
+            </div>
+
+            <!-- Tab 3: Reflection -->
+            <div class="tab-content" id="tab-2">
+                <div class="reflection-section">
+                    <div class="section-title">📝 会話サマリー</div>
+                    <div class="summary-box">
+                        <div class="summary-text">
+                            本日の1on1では、プロジェクトの進捗確認を行いました。現在70%完了ですが、クライアント対応で遅延が発生しています。次のステップとして具体的なサポート内容を決める必要があります。
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="section-title">👍 良かった点</div>
+                    <div class="feedback-list">
+                        <div class="feedback-item positive">
+                            <div class="feedback-icon positive">✓</div>
+                            <div class="feedback-text">最初に相手の進捗状況を確認してから話を進めていました</div>
+                        </div>
+                        <div class="feedback-item positive">
+                            <div class="feedback-icon positive">✓</div>
+                            <div class="feedback-text">具体的な数値（70%）を引き出すことができていました</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="section-title">💡 改善できる点</div>
+                    <div class="feedback-list">
+                        <div class="feedback-item improvement">
+                            <div class="feedback-icon improvement">!</div>
+                            <div class="feedback-text">「なぜ」で始まる詰問形式は、相手を防御的にさせる可能性があります。「何が」「どうすれば」などの表現に置き換えると効果的です</div>
+                        </div>
+                        <div class="feedback-item improvement">
+                            <div class="feedback-icon improvement">!</div>
+                            <div class="feedback-text">過去の失敗を繰り返し指摘するより、今後の解決策に焦点を当てると建設的な対話になります</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="section-title">📋 次回へのアクション</div>
+                    <div class="action-list">
+                        <div class="action-item">
+                            <div class="action-checkbox"></div>
+                            <div class="action-text">クライアント対応の具体的なサポート内容を決める</div>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-checkbox"></div>
+                            <div class="action-text">次回は相手の強みを認める発言を入れる</div>
+                        </div>
+                        <div class="action-item">
+                            <div class="action-checkbox"></div>
+                            <div class="action-text">「なぜ」を「何が」に置き換える練習をする</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="save-button">
+                    💾 振り返りを保存する
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(index) {
+            // Update tab states
+            document.querySelectorAll('.tab').forEach((tab, i) => {
+                tab.classList.toggle('active', i === index);
+            });
+
+            // Update content visibility
+            document.querySelectorAll('.tab-content').forEach((content, i) => {
+                content.classList.toggle('active', i === index);
+            });
+        }
+    </script>
+</body>
+</html>

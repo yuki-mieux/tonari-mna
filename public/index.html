@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>聖人君子AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="/app/styles.css?v=2">
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div class="auth-screen" id="authScreen">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">聖人君子AI</div>
+        <p class="auth-tagline">管理職の隣にいる、最高の相棒</p>
+      </div>
+      <div class="auth-error" id="authError"></div>
+      <form class="auth-form" id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">メールアドレス</label>
+          <input type="email" id="loginEmail" required placeholder="you@example.com">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">パスワード</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="auth-btn" id="loginBtn">ログイン</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="appContainer" style="display:none;">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <span class="brand">聖人君子AI</span>
+      </div>
+      <div class="header-right">
+        <span class="status-text" id="statusText">待機中</span>
+        <button class="play-btn" id="playBtn" title="録音を開始">
+          <svg viewBox="0 0 24 24" fill="currentColor" id="playIcon">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" id="stopIcon" style="display:none;">
+            <rect x="6" y="6" width="12" height="12" rx="1"/>
+          </svg>
+        </button>
+        <button class="btn-ghost" id="settingsBtn">設定</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <div class="app-layout" style="display: flex;">
+
+        <!-- DEBUG: Transcript Panel (LEFT) -->
+        <div class="debug-transcript-panel">
+          <div class="debug-panel-header">文字起こし (DEBUG)</div>
+          <div class="debug-panel-content" id="transcriptLog"></div>
+        </div>
+
+        <!-- Main Panel (RIGHT) -->
+        <div class="main-panel-container">
+          <div class="main-panel">
+
+            <!-- Balance Bar -->
+            <div class="balance-bar">
+              <span class="balance-label">あなた</span>
+              <div class="balance-track">
+                <div class="balance-fill" id="balanceFill" style="width: 50%"></div>
+              </div>
+              <span class="balance-label">相手</span>
+            </div>
+
+            <!-- Risk Cards Area -->
+            <div class="cards-area" id="cardsArea">
+              <div class="empty-state" id="emptyState">
+                <div class="empty-icon">😊</div>
+                <div class="empty-text">問題のある発言はありません<br>会話を続けてください</div>
+              </div>
+            </div>
+
+            <!-- Session End Button -->
+            <div class="session-footer">
+              <button class="btn-session-end" id="sessionEndBtn" style="display:none;">
+                セッション終了 → 振り返りへ
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settingsModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>設定</h3>
+          <button class="modal-close" id="closeSettings">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>マイクデバイス</label>
+            <select id="micSelect">
+              <option value="">デフォルト</option>
+            </select>
+            <button class="modal-btn secondary" id="refreshMics" style="margin-top: 8px;">マイク一覧を更新</button>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn primary" id="saveSettings">保存</button>
+          </div>
+          <hr class="modal-divider">
+          <div class="account-section">
+            <label>アカウント</label>
+            <div class="account-info">
+              <span class="user-email" id="userEmail"></span>
+              <button class="logout-btn" id="logoutBtn">ログアウト</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reflection Modal -->
+    <div class="modal-overlay" id="reflectionModal">
+      <div class="modal modal-large">
+        <div class="modal-header">
+          <h3>振り返り</h3>
+          <button class="modal-close" id="closeReflection">×</button>
+        </div>
+        <div class="modal-body" id="reflectionContent">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/app/app.js"></script>
+</body>
+</html>
