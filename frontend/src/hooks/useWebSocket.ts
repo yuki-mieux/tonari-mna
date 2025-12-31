@@ -30,10 +30,6 @@ export function useWebSocket(
   options: UseWebSocketOptions = {}
 ): UseWebSocketReturn {
   const {
-    onMessage,
-    onOpen,
-    onClose,
-    onError,
     reconnectAttempts = 3,
     reconnectInterval = 3000,
   } = options;
