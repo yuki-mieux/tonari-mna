@@ -113,20 +113,22 @@ export function Session() {
         console.log('Adding utterance:', utterance);
         addUtterance(utterance);
 
-        // バックエンドにも送信（抽出処理のため）
-        send({
-          type: 'transcript',
-          text,
-          speaker: speakerType as 'user' | 'customer',
-          is_final: true,
-        });
+        // バックエンドにも送信（抽出処理のため）- 接続されている場合のみ
+        if (wsStatus === 'connected') {
+          send({
+            type: 'transcript',
+            text,
+            speaker: speakerType as 'user' | 'customer',
+            is_final: true,
+          });
+        }
         setInterimTranscript('');
       } else {
         // 中間結果を表示
         setInterimTranscript(text);
       }
     },
-    [send, sessionId, addUtterance]
+    [send, sessionId, addUtterance, wsStatus]
   );
 
   // 音声キャプチャフック

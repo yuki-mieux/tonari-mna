@@ -38,6 +38,7 @@ export function useAudioCapture(
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const websocketRef = useRef<WebSocket | null>(null);
   const optionsRef = useRef(options);
+  const isRecordingRef = useRef(false);
   optionsRef.current = options;
 
   const stopRecording = useCallback(() => {
@@ -61,12 +62,13 @@ export function useAudioCapture(
       websocketRef.current = null;
     }
 
+    isRecordingRef.current = false;
     setIsRecording(false);
     setIsConnecting(false);
   }, []);
 
   const startRecording = useCallback(async () => {
-    if (isRecording || isConnecting) return;
+    if (isRecordingRef.current || isConnecting) return;
 
     setError(null);
     setIsConnecting(true);
@@ -101,6 +103,7 @@ export function useAudioCapture(
       ws.onopen = () => {
         console.log('Deepgram WebSocket connected');
         setIsConnecting(false);
+        isRecordingRef.current = true;
         setIsRecording(true);
 
         // MediaRecorderを設定
@@ -154,7 +157,7 @@ export function useAudioCapture(
 
       ws.onclose = (event) => {
         console.log('Deepgram WebSocket closed:', event.code, event.reason);
-        if (isRecording) {
+        if (isRecordingRef.current) {
           stopRecording();
         }
       };
@@ -167,7 +170,7 @@ export function useAudioCapture(
       setIsConnecting(false);
       stopRecording();
     }
-  }, [apiKey, language, isRecording, isConnecting, stopRecording]);
+  }, [apiKey, language, isConnecting, stopRecording]);
 
   return {
     isRecording,
