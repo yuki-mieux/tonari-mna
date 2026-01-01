@@ -94,11 +94,27 @@ export function Session() {
   const handleTranscript = useCallback(
     (text: string, isFinal: boolean, speaker?: string) => {
       if (isFinal) {
-        // 確定したトランスクリプトをWebSocketに送信
+        const speakerType = speaker === 'speaker_0' ? 'user' : 'customer';
+
+        // ローカルに発話を追加（即座にUIに反映）
+        const utterance = {
+          id: `local-${Date.now()}`,
+          session_id: sessionId || '',
+          speaker: speakerType as 'user' | 'customer',
+          text,
+          timestamp: new Date().toISOString(),
+          is_final: true,
+          is_important: false,
+          is_pinned: false,
+          pin_note: null,
+        };
+        addUtterance(utterance);
+
+        // バックエンドにも送信（抽出処理のため）
         send({
           type: 'transcript',
           text,
-          speaker: (speaker === 'speaker_0' ? 'user' : 'customer') as 'user' | 'customer',
+          speaker: speakerType as 'user' | 'customer',
           is_final: true,
         });
         setInterimTranscript('');
@@ -107,7 +123,7 @@ export function Session() {
         setInterimTranscript(text);
       }
     },
-    [send]
+    [send, sessionId, addUtterance]
   );
 
   // 音声キャプチャフック
