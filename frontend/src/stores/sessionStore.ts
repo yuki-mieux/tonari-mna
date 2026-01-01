@@ -67,15 +67,25 @@ export const useSessionStore = create<SessionStore>((set) => ({
   ...initialState,
 
   startSession: (sessionId, projectId) =>
-    set({
-      sessionId,
-      projectId,
-      status: 'active',
-      isRecording: false,
-      utterances: [],
-      extractions: {},
-      suggestions: [],
-      reframings: [],
+    set((state) => {
+      // 同じセッションIDの場合はデータをリセットしない
+      if (state.sessionId === sessionId) {
+        return {
+          ...state,
+          status: 'active',
+        };
+      }
+      // 新しいセッションの場合はリセット
+      return {
+        sessionId,
+        projectId,
+        status: 'active',
+        isRecording: false,
+        utterances: [],
+        extractions: {},
+        suggestions: [],
+        reframings: [],
+      };
     }),
 
   endSession: () =>
