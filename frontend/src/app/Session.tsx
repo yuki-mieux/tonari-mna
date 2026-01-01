@@ -93,6 +93,8 @@ export function Session() {
   // 音声キャプチャのトランスクリプトハンドラ
   const handleTranscript = useCallback(
     (text: string, isFinal: boolean, speaker?: string) => {
+      console.log('handleTranscript called:', { text, isFinal, speaker });
+
       if (isFinal) {
         const speakerType = speaker === 'speaker_0' ? 'user' : 'customer';
 
@@ -108,6 +110,7 @@ export function Session() {
           is_pinned: false,
           pin_note: null,
         };
+        console.log('Adding utterance:', utterance);
         addUtterance(utterance);
 
         // バックエンドにも送信（抽出処理のため）

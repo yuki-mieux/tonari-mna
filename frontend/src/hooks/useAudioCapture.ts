@@ -122,6 +122,7 @@ export function useAudioCapture(
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          console.log('Deepgram message:', data.type, data);
 
           if (data.type === 'Results' && data.channel?.alternatives?.[0]) {
             const alternative = data.channel.alternatives[0];
@@ -135,6 +136,7 @@ export function useAudioCapture(
                   ? `speaker_${alternative.words[0].speaker}`
                   : undefined;
 
+              console.log('Transcript:', { transcript, isFinal, speaker });
               optionsRef.current.onTranscript?.(transcript, isFinal, speaker);
             }
           }
